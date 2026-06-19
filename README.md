@@ -13,12 +13,12 @@ MOTIVO1, MOTIVO2
 ## Divisão de tarefas (4 integrantes)
 
 ### Seleção e Limpeza dos Dados (Data Cleaning)
-- [ ] Importar dataset e verificar tipos de dados
-- [ ] Tratar valores ausentes/inconsistentes (Peso, Altura, IDADE, PA)
-- [ ] Padronizar SEXO, Convenio, HDA1/HDA2, MOTIVO1/MOTIVO2 (categorias)
-- [ ] Tratar/recalcular DN x Atendimento x IDADE (consistência)
-- [ ] Remover/justificar outliers (ex: PA negativa, IMC absurdo)
-- [ ] Documentar decisões de limpeza no notebook/markdown
+- [x] Importar dataset e verificar tipos de dados
+- [x] Tratar valores ausentes/inconsistentes (Peso, Altura, IDADE, PA)
+- [x] Padronizar SEXO, Convenio, HDA1/HDA2, MOTIVO1/MOTIVO2 (categorias)
+- [x] Tratar/recalcular DN x Atendimento x IDADE (consistência)
+- [x] Remover/justificar outliers (ex: PA negativa, IMC absurdo)
+- [x] Documentar decisões de limpeza no notebook/markdown
 
 ### Engenharia de Atributos (Feature Engineering)
 - [ ] Recalcular IMC = Peso / Altura² e comparar com IMC informado
