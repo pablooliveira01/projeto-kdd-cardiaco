@@ -4,10 +4,13 @@ PIPELINE DE LIMPEZA — UCMF/RHP
 [carregar] 12873 linhas, 21 colunas.
 [datas] 1826 registros com IDADE inconsistente ou negativa.
 [duplicatas] Removidos 0 registros duplicados por ID.
+[numericas] 12 registros com ALTURA < 40cm (implausível) → NaN.
 [numericas] IDADE preenchida por IDADE_CALC em 1 registros.
 [numericas] 95 registros com IDADE > 19 anos (fora do escopo pediátrico).
 [numericas] 0 registros com PA invertida → NaN.
-[numericas] 4 registros com IMC informado divergindo >1 do calculado.
+[numericas] 2 registros com PA > 250 mmHg (implausível) → NaN.
+[numericas] 0 registros com IMC informado divergindo >1 do calculado.
+[numericas] 11 registros com IMC_CALC > 40 (implausível) → PESO/ALTURA/IMC → NaN.
 [numericas] 14 registros com FC fora de 30-300 bpm → NaN.
 [categoricas] SEXO: 4 NaN após padronização.
 [categoricas] PULSOS: 1194 NaN após padronização.
@@ -20,15 +23,15 @@ PIPELINE DE LIMPEZA — UCMF/RHP
                   missing   pct_%
 PPA                 12873  100.00
 HDA2                12466   96.84
-PA_DIASTOLICA        7740   60.13
-PA_SISTOLICA         7730   60.05
-IMC_CALC             4836   37.57
-IMC                  4836   37.57
-ALTURA               4460   34.65
+PA_DIASTOLICA        7742   60.14
+PA_SISTOLICA         7732   60.06
+IMC_CALC             4858   37.74
+IMC                  4858   37.74
+ALTURA               4483   34.82
 HDA1                 4270   33.17
 CONVENIO             4108   31.91
 MOTIVO2              3496   27.16
-PESO                 2928   22.75
+PESO                 2939   22.83
 FC                   1898   14.74
 IDADE_CALC           1721   13.37
 IDADE                1617   12.56
@@ -36,10 +39,10 @@ DN                   1614   12.54
 ATENDIMENTO          1295   10.06
 PULSOS               1194    9.28
 B2                   1178    9.15
-NORMAL_X_ANORMAL     1168    9.07
 SOPRO                1167    9.07
+NORMAL_X_ANORMAL     1168    9.07
 MOTIVO1              1055    8.20
 SEXO                    4    0.03
 
-[pipeline] Dataset final: 12873 linhas × 27 colunas.
+[pipeline] Dataset final: 12873 linhas × 30 colunas.
 ============================================================

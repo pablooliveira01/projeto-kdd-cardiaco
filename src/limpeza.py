@@ -90,10 +90,13 @@ def converter_datas(df: pd.DataFrame) -> pd.DataFrame:
 def limpar_numericas(df: pd.DataFrame) -> pd.DataFrame:
     """
     - Peso e Altura iguais a 0 → NaN
+    - ALTURA < 40cm (implausível) → NaN
     - IDADE < 0 → NaN  (usar IDADE_CALC quando disponível)
-    - PA_SISTOLICA / PA_DIASTOLICA negativas → NaN
+    - IDADE > 19 → flag (fora do escopo pediátrico, mantido no dataset)
+    - PA_SISTOLICA / PA_DIASTOLICA <= 0 → NaN
     - PA_SISTOLICA < PA_DIASTOLICA (inversão fisiológica) → NaN nos dois
     - IMC: recalcular a partir de Peso/Altura² e comparar com informado
+    - IMC_CALC > 40 (implausível) → PESO/ALTURA/IMC → NaN
     - Flags de outlier para revisão manual
     """
     # --- Peso / Altura ---
@@ -103,6 +106,14 @@ def limpar_numericas(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[df["PESO"]   <= 0, "PESO"]   = np.nan
     df.loc[df["ALTURA"] <= 0, "ALTURA"] = np.nan
 
+    # Altura implausivelmente baixa (< 40cm): nem um recém-nascido prematuro
+    # mede menos que isso. Provável erro de digitação (dígito faltando,
+    # ex: "117" registrado como "17"). Gera IMC astronômico se não tratado.
+    df["FLAG_ALTURA_IMPLAUSIVEL"] = df["ALTURA"].notna() & (df["ALTURA"] < 40)
+    n_alt = df["FLAG_ALTURA_IMPLAUSIVEL"].sum()
+    df.loc[df["FLAG_ALTURA_IMPLAUSIVEL"], "ALTURA"] = np.nan
+    print(f"[numericas] {n_alt} registros com ALTURA < 40cm (implausível) → NaN.")
+
     # --- IDADE ---
     df["IDADE"] = pd.to_numeric(df["IDADE"], errors="coerce")
     df.loc[df["IDADE"] < 0, "IDADE"] = np.nan
@@ -111,7 +122,7 @@ def limpar_numericas(df: pd.DataFrame) -> pd.DataFrame:
     mask_sem_idade = df["IDADE"].isna() & df["IDADE_CALC"].notna() & (df["IDADE_CALC"] >= 0)
     df.loc[mask_sem_idade, "IDADE"] = df.loc[mask_sem_idade, "IDADE_CALC"].round(2)
     print(f"[numericas] IDADE preenchida por IDADE_CALC em {mask_sem_idade.sum()} registros.")
-    
+
     # Idade fora do escopo do estudo (0–19 anos, conforme RHP/UCMF)
     df["FLAG_IDADE_FORA_ESCOPO"] = df["IDADE"].notna() & (df["IDADE"] > 19)
     print(f"[numericas] {df['FLAG_IDADE_FORA_ESCOPO'].sum()} registros com IDADE > 19 anos (fora do escopo pediátrico).")
@@ -120,7 +131,7 @@ def limpar_numericas(df: pd.DataFrame) -> pd.DataFrame:
     df["PA_SISTOLICA"]  = pd.to_numeric(df["PA_SISTOLICA"],  errors="coerce")
     df["PA_DIASTOLICA"] = pd.to_numeric(df["PA_DIASTOLICA"], errors="coerce")
 
-    # PA negativa
+    # PA negativa ou zero
     df.loc[df["PA_SISTOLICA"]  <= 0, "PA_SISTOLICA"]  = np.nan
     df.loc[df["PA_DIASTOLICA"] <= 0, "PA_DIASTOLICA"] = np.nan
 
@@ -128,6 +139,17 @@ def limpar_numericas(df: pd.DataFrame) -> pd.DataFrame:
     inv = df["PA_SISTOLICA"] < df["PA_DIASTOLICA"]
     df.loc[inv, ["PA_SISTOLICA", "PA_DIASTOLICA"]] = np.nan
     print(f"[numericas] {inv.sum()} registros com PA invertida → NaN.")
+
+    # PA implausível (> 250 mmHg): mesmo a HAS estágio 2 mais grave em
+    # pediatria não chega perto disso. Provável erro de digitação
+    # (dígito extra, ex: "99" registrado como "990").
+    df["FLAG_PA_IMPLAUSIVEL"] = (
+        (df["PA_SISTOLICA"].notna() & (df["PA_SISTOLICA"] > 250)) |
+        (df["PA_DIASTOLICA"].notna() & (df["PA_DIASTOLICA"] > 250))
+    )
+    n_pa = df["FLAG_PA_IMPLAUSIVEL"].sum()
+    df.loc[df["FLAG_PA_IMPLAUSIVEL"], ["PA_SISTOLICA", "PA_DIASTOLICA"]] = np.nan
+    print(f"[numericas] {n_pa} registros com PA > 250 mmHg (implausível) → NaN.")
 
     # --- IMC ---
     df["IMC"] = pd.to_numeric(df["IMC"], errors="coerce")
@@ -142,6 +164,15 @@ def limpar_numericas(df: pd.DataFrame) -> pd.DataFrame:
     )
     n_div = df["FLAG_IMC_DIVERGENTE"].sum()
     print(f"[numericas] {n_div} registros com IMC informado divergindo >1 do calculado.")
+
+    # IMC implausível (> 40): segunda camada de segurança contra outliers
+    # de digitação em PESO ou ALTURA que escapam do filtro de altura mínima
+    # (ex: peso de adulto registrado para criança). IMC > 40 em pediatria
+    # é extremamente raro.
+    df["FLAG_IMC_IMPLAUSIVEL"] = df["IMC_CALC"].notna() & (df["IMC_CALC"] > 40)
+    n_imc = df["FLAG_IMC_IMPLAUSIVEL"].sum()
+    df.loc[df["FLAG_IMC_IMPLAUSIVEL"], ["PESO", "ALTURA", "IMC_CALC"]] = np.nan
+    print(f"[numericas] {n_imc} registros com IMC_CALC > 40 (implausível) → PESO/ALTURA/IMC → NaN.")
 
     # Usar IMC_CALC como referência oficial
     df["IMC"] = df["IMC_CALC"]

@@ -1,0 +1,176 @@
+============================================================
+PIPELINE DE EDA — UCMF/RHP
+============================================================
+[pipeline] Dataset carregado: (12873, 35)
+
+============================================================
+1. ESTATÍSTICAS DESCRITIVAS
+============================================================
+
+── Variáveis numéricas ──
+          PESO   ALTURA      IMC     IDADE  PA_SISTOLICA  PA_DIASTOLICA        FC  PERCENTIL_ALTURA  PERCENTIL_IMC
+count  9934.00  8390.00  8015.00  11256.00       5141.00        5131.00  10975.00           7538.00        7184.00
+mean     20.95   101.31    17.29      5.38        101.51          62.65     95.26             33.77          60.37
+std      16.41    35.36     3.45      5.17         11.58           9.09     17.97             33.64          34.53
+min       0.30    40.00     2.39      0.00         60.00           6.00     43.00              1.00           1.00
+25%       9.00    71.00    15.15      1.03         90.00          60.00     80.00              1.00          26.88
+50%      16.00   100.00    16.72      4.04        100.00          60.00     92.00             20.00          71.60
+75%      28.00   129.00    18.90      8.63        110.00          70.00    100.00             62.50          94.90
+max     118.00   198.00    39.54     71.81        180.00         120.00    300.00             99.00          99.00
+
+── Variáveis categóricas (top valores) ──
+
+SEXO:
+SEXO
+M      6728
+F      4724
+I      1417
+NaN       4
+
+PULSOS:
+PULSOS
+Normais                11533
+NaN                     1194
+Amplos                    53
+Femorais Diminuídos       39
+Outro                     36
+Diminuídos                18
+
+B2:
+B2
+Normal             11098
+NaN                 1178
+Hiperfonética        295
+Desdobrado Fixo      149
+Única                 77
+Outro                 76
+
+SOPRO:
+SOPRO
+Ausente                   7275
+Sistólico                 4371
+NaN                       1167
+Contínuo                    48
+Diastólico                   9
+Sistólico e Diastólico       3
+
+NORMAL_X_ANORMAL:
+NORMAL_X_ANORMAL
+Normal     6745
+Anormal    4960
+NaN        1168
+
+IMC_CLASSIFICACAO:
+IMC_CLASSIFICACAO
+Não Calculado      8208
+Eutrófico          2510
+Obesidade          1217
+Excesso de peso     717
+Baixo peso          221
+
+PPA_CALCULADO:
+PPA_CALCULADO
+Não Calculado      10291
+Normal              2130
+HAS estágio 1        222
+Pré-hipertensão      182
+HAS estágio 2         48
+
+FAIXA_ETARIA:
+FAIXA_ETARIA
+0-2 anos (lactente/primeira infância)    3755
+5-12 anos (escolar)                      3632
+2-5 anos (pré-escolar)                   2593
+Não Calculado                            1617
+12-19 anos (adolescente)                 1181
+19+ anos (fora do escopo pediátrico)       95
+
+============================================================
+2. DISTRIBUIÇÃO DA VARIÁVEL-ALVO (NORMAL_X_ANORMAL)
+============================================================
+                  contagem  pct_%
+NORMAL_X_ANORMAL                 
+Normal                6745  52.40
+Anormal               4960  38.53
+NaN                   1168   9.07
+
+============================================================
+3. CORRELAÇÕES ENTRE VARIÁVEIS NUMÉRICAS
+============================================================
+               PESO  ALTURA   IMC  IDADE  PA_SISTOLICA  PA_DIASTOLICA    FC
+PESO           1.00    0.91  0.67   0.86          0.58           0.45 -0.56
+ALTURA         0.91    1.00  0.44   0.88          0.48           0.37 -0.67
+IMC            0.67    0.44  1.00   0.43          0.53           0.44 -0.30
+IDADE          0.86    0.88  0.43   1.00          0.39           0.31 -0.56
+PA_SISTOLICA   0.58    0.48  0.53   0.39          1.00           0.73 -0.17
+PA_DIASTOLICA  0.45    0.37  0.44   0.31          0.73           1.00 -0.12
+FC            -0.56   -0.67 -0.30  -0.56         -0.17          -0.12  1.00
+
+============================================================
+4. COMPARAÇÃO NORMAL × ANORMAL (PULSOS, B2, SOPRO)
+============================================================
+
+PULSOS × NORMAL_X_ANORMAL (% por linha):
+NORMAL_X_ANORMAL     Anormal  Normal
+PULSOS                              
+Amplos                  86.8    13.2
+Diminuídos              88.9    11.1
+Femorais Diminuídos     92.3     7.7
+Normais                 41.8    58.2
+Outro                   72.2    27.8
+
+B2 × NORMAL_X_ANORMAL (% por linha):
+NORMAL_X_ANORMAL  Anormal  Normal
+B2                               
+Desdobrado Fixo      89.9    10.1
+Hiperfonética        98.0     2.0
+Normal               39.6    60.4
+Outro                88.2    11.8
+Única                97.4     2.6
+
+SOPRO × NORMAL_X_ANORMAL (% por linha):
+NORMAL_X_ANORMAL        Anormal  Normal
+SOPRO                                  
+Ausente                     9.9    90.1
+Contínuo                   80.9    19.1
+Diastólico                100.0     0.0
+Sistólico                  95.9     4.1
+Sistólico e Diastólico    100.0     0.0
+
+============================================================
+5. HDA1 — TOP MOTIVOS POR DIAGNÓSTICO
+============================================================
+NORMAL_X_ANORMAL  Anormal  Normal
+HDA1                             
+Assintomático        3047    3486
+Cianose               143     115
+Desmaio/tontura        45     110
+Dispneia              287     252
+Dor precordial        169     338
+Ganho de peso          31      56
+Outro                  57      67
+Palpitacao            106     256
+
+============================================================
+6. PPA_CALCULADO e IMC_CLASSIFICACAO × DIAGNÓSTICO
+============================================================
+
+PPA_CALCULADO × NORMAL_X_ANORMAL (% por linha, excluindo 'Não Calculado'):
+NORMAL_X_ANORMAL  Anormal  Normal
+PPA_CALCULADO                    
+HAS estágio 1        39.2    60.8
+HAS estágio 2        56.2    43.8
+Normal               35.4    64.6
+Pré-hipertensão      38.7    61.3
+
+IMC_CLASSIFICACAO × NORMAL_X_ANORMAL (% por linha, excluindo 'Não Calculado'):
+NORMAL_X_ANORMAL   Anormal  Normal
+IMC_CLASSIFICACAO                 
+Baixo peso            47.6    52.4
+Eutrófico             37.9    62.1
+Excesso de peso       35.9    64.1
+Obesidade             32.3    67.7
+
+============================================================
+EDA CONCLUÍDA — gráficos salvos em reports/figures/
+============================================================
