@@ -1,0 +1,10 @@
+# Projeto KDD — Predição de Patologias Cardíacas (UCMF/RHP)
+# Validado com Python 3.13. Instalação sugerida (uv):
+#   uv venv --python 3.13 .venv
+#   uv pip install --python .venv -r requirements.txt
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.4
+matplotlib>=3.8
+seaborn>=0.13
+markdown>=3.6          # usado apenas por src/gerar_pdf_relatorio.py

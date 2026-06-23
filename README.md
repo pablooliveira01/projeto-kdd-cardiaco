@@ -5,8 +5,10 @@ pacientes pediátricos do **Real Hospital Português (RHP/UCMF)**, com o
 objetivo de prever a variável `NORMAL_X_ANORMAL` (presença ou não de
 patologia cardíaca) a partir de dados clínicos e antropométricos.
 
-> **Status geral:** Limpeza, Feature Engineering e EDA concluídas e
-> validadas. Modelagem ainda não iniciada (próxima etapa).
+> **Status geral:** As 4 etapas do KDD (Limpeza, Feature Engineering, EDA e
+> Modelagem) estão concluídas e validadas. O relatório final de 2 páginas
+> exigido pelo estudo de caso está em `reports/relatorio_final.pdf`
+> (fonte em `reports/relatorio_final.md`).
 
 ---
 
@@ -83,7 +85,7 @@ projeto-kdd-cardiaco/
 | 1. Seleção e Limpeza | `src/limpeza.py` | ✅ Concluída e validada |
 | 2. Engenharia de Atributos | `src/features.py` + `src/referencias_clinicas.py` | ✅ Concluída e validada |
 | 3. Análise Exploratória (EDA) | `src/eda.py` | ✅ Concluída e validada |
-| 4. Modelagem e Avaliação | `src/modelagem.py` | ⏳ Não iniciada (template vazio) |
+| 4. Modelagem e Avaliação | `src/modelagem.py` | ✅ Concluída e validada |
 
 ---
 
@@ -322,37 +324,65 @@ primariamente definida por peso/PA, e sim pelos achados de ausculta
 
 ---
 
-## Etapa 4 — Modelagem (não iniciada)
+## Etapa 4 — Modelagem e Avaliação
 
-`src/modelagem.py` ainda é um template vazio. Conforme o checklist original:
+Pipeline (`pipeline_modelagem()` em `src/modelagem.py`) — roda sobre
+`UCMF_features.csv` e gera `reports/modelagem_summary.txt` (log completo),
+`reports/metricas_modelos.csv` (métricas) e 5 figuras `04_*` em
+`reports/figures/`.
 
-- [ ] Pré-processamento final: encoding de categóricas (provavelmente
-      one-hot em `PULSOS`/`B2`/`SOPRO`/`SEXO`/`FAIXA_ETARIA`), descartar as
-      linhas com `NORMAL_X_ANORMAL` NaN (alvo ausente), normalização de
-      numéricas
-- [ ] Split treino/teste (e validação cruzada)
-- [ ] Treinar modelos: Árvore de Decisão, Random Forest, KNN, Naive Bayes,
-      Regressão Logística — para prever `NORMAL_X_ANORMAL`
-- [ ] Avaliar métricas: acurácia, precisão, recall, F1, matriz de confusão
-- [ ] Comparar modelos e selecionar o melhor
-- [ ] Interpretar *feature importance*
+### Decisões de modelagem tomadas
 
-### Decisões em aberto antes de codificar
+- **Amostra supervisionada:** descartados os **1.168 registros sem rótulo**
+  (`NORMAL_X_ANORMAL` = NaN) → **11.705** registros (Normal 57,6% / Anormal
+  42,4% — desbalanceamento leve, sem reamostragem).
+- **Alvo:** classe positiva = **Anormal** (1); métricas de precisão/recall/F1
+  reportadas para essa classe.
+- **Atributos:** 9 numéricos (`IDADE`, `PESO`, `ALTURA`, `IMC`, `FC`,
+  `PA_SISTOLICA`, `PA_DIASTOLICA`, `PERCENTIL_ALTURA`, `PERCENTIL_IMC`) + 7
+  categóricos (`SEXO`, `FAIXA_ETARIA`, `PULSOS`, `B2`, `PPA_CALCULADO`,
+  `IMC_CLASSIFICACAO`, `SOPRO`). Excluídos: ID, datas, flags de auditoria e
+  texto livre (`HDA*`/`MOTIVO*`/`CONVENIO`).
+- **Pré-processamento (em `Pipeline`/`ColumnTransformer`, ajustado só no
+  treino → sem vazamento):** numéricas → imputação por mediana + *z-score*;
+  categóricas → imputação por `"Não informado"` + one-hot.
+- **PA (60% missing):** mantida (bruta + `PPA_CALCULADO`) com imputação, em
+  vez de descartada — a imputação dentro do `Pipeline` evita vazamento.
+- **Validação:** split estratificado 75/25 (`seed=42`) **idêntico** nos dois
+  cenários + validação cruzada estratificada de 5 folds no treino. Seleção do
+  melhor modelo pela **CV-F1** (não pelo teste).
 
-1. **Estratégia para PA (60% missing):** usar `PA_SISTOLICA`/
-   `PA_DIASTOLICA` brutas com imputação, ou descartá-las e confiar apenas em
-   `PPA_CALCULADO`? Decisão de modelagem ainda não tomada.
-2. **Lista final de features:** candidatas prováveis — `PESO`, `ALTURA`,
-   `IMC`, `IDADE`, `SEXO`, `PULSOS`, `B2`, `SOPRO`, `FC`,
-   `PERCENTIL_ALTURA`, `PERCENTIL_IMC`, `FAIXA_ETARIA`. Excluir `HDA1`/
-   `HDA2`, `MOTIVO1`/`MOTIVO2`, `CONVENIO` e colunas de texto livre/alta
-   cardinalidade, a menos que se decida incluir HDA como categórica também.
-3. **Linhas sem rótulo (1.168 registros com `NORMAL_X_ANORMAL` = NaN):**
-   sempre excluídas do treino/teste — não há como treinar sem rótulo.
-4. **Ordem de experimentação sugerida:** começar por Árvore de Decisão e
-   Regressão Logística (simples, interpretáveis, fáceis de explicar na
-   apresentação) antes de Random Forest/KNN — mas o checklist do README
-   pede todos os modelos.
+### Modelos e resultado (classe positiva = Anormal, conjunto de teste)
+
+Os 5 modelos do checklist — **Árvore de Decisão, Random Forest, KNN, Naive
+Bayes, Regressão Logística** — avaliados em **dois cenários (com e sem
+`SOPRO`)**, conforme exigência do enunciado:
+
+| Cenário | Melhor modelo | F1 | Acurácia | ROC-AUC |
+|---|---|---:|---:|---:|
+| **Com SOPRO** | Regressão Logística | 0,913 | 0,929 | 0,947 |
+| **Sem SOPRO** | Random Forest | 0,555 | 0,656 | 0,691 |
+
+> **Achado central:** remover `SOPRO` derruba o F1 do melhor modelo de
+> **~0,91 para ~0,55**. A importância por permutação confirma que a ausculta
+> — sobretudo o **sopro**, seguido de longe pela bulha **B2** — concentra
+> quase toda a capacidade preditiva; antropometria, idade e PA são marginais.
+> Com SOPRO, Árvore/Random Forest/Regressão Logística são um **empate técnico**
+> (CV-F1 ≈ 0,91); escolheu-se a Regressão Logística por interpretabilidade,
+> maior ROC-AUC e menor variância. Interpretação completa (incl. ressalva de
+> **viés de seleção** — sopro sistólico pediátrico é em geral inocente fora
+> deste contexto de encaminhamento) no relatório final.
+
+### Relatório final e apresentação (entrega)
+
+- **Relatório:** `reports/relatorio_final.md` → `reports/relatorio_final.pdf`
+  (**2 páginas**, `python src/gerar_pdf_relatorio.py`). Cobre os itens exigidos:
+  limpezas, transformações, modelos, pipeline, métricas (com/sem SOPRO) e
+  interpretação do melhor modelo.
+- **Apresentação:** `reports/apresentacao.md` → `reports/apresentacao.pdf`
+  (**10 slides 16:9**, `python src/gerar_apresentacao.py`), com roteiro de fala
+  e divisão de tempo entre os 4 integrantes em `reports/apresentacao_roteiro.md`
+  (meta de 9 min, limite de 10).
 
 ---
 
@@ -371,9 +401,18 @@ python src/features.py
 # Etapa 3 — EDA (depende da Etapa 2)
 python src/eda.py
 
-# Etapa 4 — Modelagem (depende da Etapa 3) — ainda não implementada
+# Etapa 4 — Modelagem e Avaliação (depende da Etapa 3)
 python src/modelagem.py
+
+# Relatório final em PDF (2 páginas) a partir do relatorio_final.md
+python src/gerar_pdf_relatorio.py
 ```
+
+> **Ambiente neste repositório:** os scripts foram validados com Python 3.13
+> num venv criado via `uv`
+> (`uv venv --python 3.13 .venv && uv pip install --python .venv pandas numpy
+> scikit-learn matplotlib seaborn markdown`). Rode com `.venv/bin/python
+> src/<etapa>.py` a partir da raiz do projeto.
 
 Cada script lê a saída da etapa anterior em `data/processed/` e não deve ser
 rodado fora de ordem.
@@ -421,7 +460,8 @@ rodado fora de ordem.
 | Seleção e Limpeza dos Dados | — | ✅ Concluída |
 | Engenharia de Atributos | — | ✅ Concluída |
 | Análise Exploratória (EDA) | — | ✅ Concluída |
-| Modelagem e Avaliação | — | ⏳ Pendente |
+| Modelagem e Avaliação | — | ✅ Concluída |
+| Relatório final (2 páginas) | — | ✅ Concluído |
 
 ### Etapas transversais (todos)
 - [ ] Revisão do referencial teórico/clínico (intervalos de IDADE, IMC, PA

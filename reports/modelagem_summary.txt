@@ -1,0 +1,129 @@
+================================================================
+PIPELINE DE MODELAGEM E AVALIAÇÃO — UCMF/RHP (Etapa 4 do KDD)
+================================================================
+[dados] Dataset de features carregado: (12873, 35)
+[dados] Registros sem rótulo descartados (alvo NaN): 1168
+[dados] Amostra supervisionada: 11705 registros
+[dados] Distribuição do alvo  →  Normal(0): 6745  |  Anormal(1): 4960  (prevalência Anormal = 42.4%)
+[split] Treino: 8778  |  Teste: 2927  (estratificado, test_size=0.25, seed=42)
+
+================================================================
+CENÁRIO: COM a variável SOPRO
+  Nº de atributos de entrada: 16 (9 numéricos + 7 categóricos)
+================================================================
+
+── Métricas no conjunto de TESTE (classe positiva = Anormal) ──
+                     Acurácia  Precisão_Anormal  Recall_Anormal  F1_Anormal  F1_macro  ROC_AUC  CV_F1_média  CV_F1_dp
+Modelo                                                                                                               
+Árvore de Decisão      0.9293            0.9567          0.8726      0.9127    0.9266   0.9383       0.9087    0.0048
+Random Forest          0.9259            0.9444          0.8766      0.9092    0.9233   0.9444       0.9065    0.0046
+KNN                    0.9019            0.9551          0.8065      0.8745    0.8970   0.9305       0.8695    0.0085
+Naive Bayes            0.7564            0.9384          0.4548      0.6127    0.7175   0.9262       0.5955    0.1906
+Regressão Logística    0.9293            0.9519          0.8774      0.9131    0.9267   0.9469       0.9110    0.0040
+
+>> Melhor modelo do cenário (por CV-F1): Regressão Logística  (CV-F1 = 0.9110 ± 0.0040; F1-teste = 0.9131)
+
+================================================================
+CENÁRIO: SEM a variável SOPRO
+  Nº de atributos de entrada: 15 (9 numéricos + 6 categóricos)
+================================================================
+
+── Métricas no conjunto de TESTE (classe positiva = Anormal) ──
+                     Acurácia  Precisão_Anormal  Recall_Anormal  F1_Anormal  F1_macro  ROC_AUC  CV_F1_média  CV_F1_dp
+Modelo                                                                                                               
+Árvore de Decisão      0.6631            0.6491          0.4460      0.5287    0.6333   0.6996       0.5111    0.0309
+Random Forest          0.6560            0.6141          0.5056      0.5546    0.6372   0.6911       0.5414    0.0126
+KNN                    0.6218            0.5789          0.3935      0.4686    0.5875   0.6385       0.4766    0.0148
+Naive Bayes            0.6238            0.8717          0.1315      0.2285    0.4899   0.6541       0.2446    0.0142
+Regressão Logística    0.6488            0.6573          0.3573      0.4629    0.6010   0.6798       0.4697    0.0164
+
+>> Melhor modelo do cenário (por CV-F1): Random Forest  (CV-F1 = 0.5414 ± 0.0126; F1-teste = 0.5546)
+
+================================================================
+INTERPRETAÇÃO DO MELHOR MODELO
+================================================================
+
+── Matriz de confusão — Regressão Logística — COM SOPRO ──
+              Prev:Normal  Prev:Anormal
+Real:Normal          1632            55
+Real:Anormal          152          1088
+
+              precision    recall  f1-score   support
+
+      Normal      0.915     0.967     0.940      1687
+     Anormal      0.952     0.877     0.913      1240
+
+    accuracy                          0.929      2927
+   macro avg      0.933     0.922     0.927      2927
+weighted avg      0.931     0.929     0.929      2927
+
+
+── Importância por permutação (queda de F1) — Regressão Logística — COM SOPRO ──
+SOPRO                0.4598
+B2                   0.0309
+PPA_CALCULADO        0.0011
+FC                   0.0002
+IDADE                0.0000
+PERCENTIL_ALTURA     0.0000
+PA_DIASTOLICA       -0.0001
+PERCENTIL_IMC       -0.0002
+PESO                -0.0003
+PA_SISTOLICA        -0.0003
+IMC_CLASSIFICACAO   -0.0003
+IMC                 -0.0005
+SEXO                -0.0005
+FAIXA_ETARIA        -0.0005
+ALTURA              -0.0006
+PULSOS              -0.0007
+
+── Matriz de confusão — Random Forest — SEM SOPRO ──
+              Prev:Normal  Prev:Anormal
+Real:Normal          1293           394
+Real:Anormal          613           627
+
+              precision    recall  f1-score   support
+
+      Normal      0.678     0.766     0.720      1687
+     Anormal      0.614     0.506     0.555      1240
+
+    accuracy                          0.656      2927
+   macro avg      0.646     0.636     0.637      2927
+weighted avg      0.651     0.656     0.650      2927
+
+
+── Importância por permutação (queda de F1) — Random Forest — SEM SOPRO ──
+FC                   0.0394
+B2                   0.0373
+IDADE                0.0209
+IMC                  0.0150
+PESO                 0.0120
+SEXO                 0.0108
+PERCENTIL_ALTURA     0.0100
+PERCENTIL_IMC        0.0083
+FAIXA_ETARIA         0.0053
+PPA_CALCULADO        0.0052
+PULSOS               0.0027
+PA_SISTOLICA         0.0020
+IMC_CLASSIFICACAO    0.0018
+PA_DIASTOLICA        0.0015
+ALTURA               0.0011
+
+================================================================
+RESUMO CONSOLIDADO — COM vs SEM SOPRO (conjunto de teste)
+================================================================
+                    COM_SOPRO                                                                                  SEM_SOPRO                                                                                 
+                     Acurácia Precisão_Anormal Recall_Anormal F1_Anormal F1_macro ROC_AUC CV_F1_média CV_F1_dp  Acurácia Precisão_Anormal Recall_Anormal F1_Anormal F1_macro ROC_AUC CV_F1_média CV_F1_dp
+Modelo                                                                                                                                                                                                   
+Árvore de Decisão      0.9293           0.9567         0.8726     0.9127   0.9266  0.9383      0.9087   0.0048    0.6631           0.6491         0.4460     0.5287   0.6333  0.6996      0.5111   0.0309
+Random Forest          0.9259           0.9444         0.8766     0.9092   0.9233  0.9444      0.9065   0.0046    0.6560           0.6141         0.5056     0.5546   0.6372  0.6911      0.5414   0.0126
+KNN                    0.9019           0.9551         0.8065     0.8745   0.8970  0.9305      0.8695   0.0085    0.6218           0.5789         0.3935     0.4686   0.5875  0.6385      0.4766   0.0148
+Naive Bayes            0.7564           0.9384         0.4548     0.6127   0.7175  0.9262      0.5955   0.1906    0.6238           0.8717         0.1315     0.2285   0.4899  0.6541      0.2446   0.0142
+Regressão Logística    0.9293           0.9519         0.8774     0.9131   0.9267  0.9469      0.9110   0.0040    0.6488           0.6573         0.3573     0.4629   0.6010  0.6798      0.4697   0.0164
+
+── Queda de F1 (Anormal) ao remover SOPRO, por modelo ──
+Modelo
+Regressão Logística    0.4502
+KNN                    0.4060
+Naive Bayes            0.3843
+Árvore de Decisão      0.3840
+Random Forest          0.3546

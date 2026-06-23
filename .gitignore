@@ -1,0 +1,13 @@
+# Ambiente virtual (recriável via uv — ver README)
+.venv/
+venv/
+
+# Cache de bytecode Python
+__pycache__/
+*.py[cod]
+
+# Artefatos intermediários da geração dos PDFs (regeráveis)
+reports/*.html
+
+# macOS
+.DS_Store
